@@ -9,8 +9,7 @@
 #import <Foundation/Foundation.h>
 #import <CommonCrypto/CommonCrypto.h>
 
-#include "SDKRequestSigner.h"
-#include "RequestSigner.h"
+#import "SDKRequestSigner.h"
 
 /// Collection of static methods for signing requests to Nexmo Servers
 @implementation SDKRequestSigner

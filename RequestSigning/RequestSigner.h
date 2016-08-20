@@ -6,9 +6,6 @@
 //  Copyright (c) 2015 Nexmo Inc. All rights reserved.
 //
 
-#ifndef VerifyIosSdk_RequestSigner_h
-#define VerifyIosSdk_RequestSigner_h
-
 @protocol RequestSigner <NSObject>
 
 -(NSString*)md5HashWithData:(NSData*)data;
@@ -17,6 +14,3 @@
 -(bool)allowedTimestamp:(NSString*)timestamp;
 
 @end
-
-
-#endif

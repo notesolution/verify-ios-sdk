@@ -6,10 +6,7 @@
 //  Copyright (c) 2015 Nexmo Inc. All rights reserved.
 //
 
-#ifndef VerifyIosSdk_RequestSigning_h
-#define VerifyIosSdk_RequestSigning_h
-
-@import Foundation;
+#import <Foundation/Foundation.h>
 
 //! Project version number for DeviceProperties.
 FOUNDATION_EXPORT double RequestSigningVersionNumber;
@@ -19,4 +16,3 @@ FOUNDATION_EXPORT const unsigned char RequestSigningVersionString[];
 
 #import "SDKRequestSigner.h"
 
-#endif

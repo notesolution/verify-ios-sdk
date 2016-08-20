@@ -6,15 +6,13 @@
 //  Copyright (c) 2015 Nexmo. All rights reserved.
 //
 
-#import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
 #include <ifaddrs.h>
 #include <arpa/inet.h>
 #include <net/if.h>
 #include <netdb.h>
 
-#include "SDKDeviceProperties.h"
-
-@import UIKit;
+#import "SDKDeviceProperties.h"
 
 @implementation SDKDeviceProperties
 

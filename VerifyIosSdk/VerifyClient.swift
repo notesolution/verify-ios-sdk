@@ -479,25 +479,4 @@ import UIKit
             }
         }
     }
-
-    @objc(beginManagedVerificationWithMessage:withDelegate:)
-    public static func beginManagedVerification(message: String, delegate: VerifyUIDelegate) {
-        sharedInstance.beginManagedVerification(message, delegate: delegate)
-    }
-    
-    func beginManagedVerification(message: String, delegate: VerifyUIDelegate) {
-        let bundle = NSBundle(forClass: VerifyClient.self)
-        let storyBoard = UIStoryboard(name: "VerifyUI", bundle: bundle)
-        let verifyController = storyBoard.instantiateInitialViewController() as! VerifyUIController
-        guard let rootViewController = UIApplication.sharedApplication().keyWindow?.rootViewController else {
-            print("unable to find root view controller!")
-            return
-        }
-        
-        //verifyController.view.frame = rootViewController.view.bounds
-        verifyController.delegate = delegate
-        verifyController.message = message
-        rootViewController.presentViewController(verifyController, animated: true, completion: nil)
-        
-    }
 }

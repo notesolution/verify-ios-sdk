@@ -6,9 +6,6 @@
 //  Copyright (c) 2015 Nexmo Inc. All rights reserved.
 //
 
-#ifndef VerifyIosSdk_DevicePropertyAccessor_h
-#define VerifyIosSdk_DevicePropertyAccessor_h
-
 @protocol DevicePropertyAccessor
 
 -(NSString*)getIpAddress;
@@ -18,5 +15,3 @@
 -(bool)addDeviceIdentifierToParams:(NSMutableDictionary*)params withKey:(NSString*)key;
 
 @end
-
-#endif

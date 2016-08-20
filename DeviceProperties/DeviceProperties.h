@@ -7,10 +7,7 @@
 //  Copyright (c) 2015 Nexmo Inc. All rights reserved.
 //
 
-#ifndef VerifyIosSdk_DeviceProperties_h
-#define VerifyIosSdk_DeviceProperties_h
-
-@import Foundation;
+#import <Foundation/Foundation.h>
 
 //! Project version number for DeviceProperties.
 FOUNDATION_EXPORT double DevicePropertiesVersionNumber;
@@ -22,4 +19,3 @@ FOUNDATION_EXPORT const unsigned char DevicePropertiesVersionString[];
 
 #import "SDKDeviceProperties.h"
 
-#endif
