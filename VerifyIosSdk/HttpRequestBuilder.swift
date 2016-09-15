@@ -113,7 +113,7 @@ class HttpRequestBuilder {
         if !self.isPost {
             var urlString : String
             if self.url.query != nil {
-                urlString = self.url.absoluteString
+                urlString = self.url.absoluteString!
                 if (queryString != "") {
                     urlString += "&\(queryString)"
                 }
@@ -126,7 +126,7 @@ class HttpRequestBuilder {
                     return nil
                 }
             } else {
-                urlString = self.url.absoluteString
+                urlString = self.url.absoluteString!
                 if (queryString != "") {
                     urlString += "?\(queryString)"
                 }
