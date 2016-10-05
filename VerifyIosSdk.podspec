@@ -9,7 +9,7 @@
 Pod::Spec.new do |s|
 
   s.name             = "VerifyIosSdk"
-  s.version          = "1.1.0"
+  s.version          = "2.0.0"
   s.summary          = "Nexmo verify SDK for iOS"
   s.homepage         = "https://github.com/notesolution/verify-ios-sdk"
   s.license          = { :type => "Apache 2.0", :file => "LICENSE" }

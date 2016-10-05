@@ -8,8 +8,9 @@
 
 import Foundation
 
-class ControlResponseFactory : ResponseFactory {
-    func createResponse(httpResponse: HttpResponse) -> BaseResponse? {
+class ControlResponseFactory: ResponseFactory {
+    
+    func createResponse(_ httpResponse: HttpResponse) -> BaseResponse? {
         return ControlResponse(httpResponse)
     }
 }

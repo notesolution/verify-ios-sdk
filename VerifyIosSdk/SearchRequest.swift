@@ -8,18 +8,20 @@
 
 import Foundation
 
-class SearchRequest : Equatable {
+class SearchRequest: Equatable {
 
-    var number : String
-    var countryCode : String?
+    var number: String
+    
+    var countryCode: String?
     
     init(number: String, countryCode: String?) {
         self.number = number
         self.countryCode = countryCode
     }
+    
+    static func ==(lhs: SearchRequest, rhs: SearchRequest) -> Bool {
+        return (lhs.number == rhs.number &&
+            lhs.countryCode == rhs.countryCode)
+    }
 }
 
-func ==(lhs: SearchRequest, rhs: SearchRequest) -> Bool {
-    return (lhs.number == rhs.number &&
-            lhs.countryCode == rhs.countryCode)
-}

@@ -11,11 +11,13 @@ import Foundation
 /**
     Contains information required by the check service to begin a request, such as a pin code
 */
-class CheckRequest : Equatable {
+class CheckRequest: Equatable {
 
-    let pinCode : String
-    let countryCode : String?
-    let phoneNumber : String
+    let pinCode: String
+    
+    let countryCode: String?
+    
+    let phoneNumber: String
     
     init(pinCode: String, countryCode: String?, phoneNumber: String) {
         self.pinCode = pinCode
@@ -26,10 +28,11 @@ class CheckRequest : Equatable {
     convenience init(verifyTask: VerifyTask, pinCode: String) {
         self.init(pinCode: pinCode, countryCode: verifyTask.countryCode, phoneNumber: verifyTask.phoneNumber)
     }
-}
-
-func ==(lhs: CheckRequest, rhs: CheckRequest) -> Bool {
-    return (lhs.pinCode == rhs.pinCode &&
+    
+   static func ==(lhs: CheckRequest, rhs: CheckRequest) -> Bool {
+        return (lhs.pinCode == rhs.pinCode &&
             lhs.countryCode == rhs.countryCode &&
             lhs.phoneNumber == rhs.phoneNumber)
+    }
 }
+

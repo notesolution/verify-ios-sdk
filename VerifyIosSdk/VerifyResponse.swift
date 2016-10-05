@@ -13,18 +13,18 @@ import Foundation
 */
 class VerifyResponse : BaseResponse {
     
-    private(set) var userStatus : String?
+    fileprivate(set) var userStatus = UserStatus.unknown
     
     required init?(_ httpResponse: HttpResponse) {
         super.init(httpResponse)
         
         if let userStatus = self.json["user_status"] as? String {
-            self.userStatus = userStatus
+            self.userStatus = UserStatus(rawValue: userStatus) ?? .unknown
         }
     }
     
     init(userStatus: String, signature: String, resultCode: Int, resultMessage: String, timestamp: String, messageBody: String) {
-        self.userStatus = userStatus
+        self.userStatus = UserStatus(rawValue: userStatus) ?? .unknown
         super.init(signature: signature, resultCode: resultCode, resultMessage: resultMessage, timestamp: timestamp, messageBody: messageBody)
     }
 }

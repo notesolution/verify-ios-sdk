@@ -13,11 +13,14 @@ import UIKit
 /**
     Contains all verification commands available within the Nexmo Verify Service
 */
-@objc public class VerifyClient : NSObject {
+public class VerifyClient {
     
-    private static var Log = Logger(String(VerifyClient))
-    private static var instance : VerifyClient?
+    fileprivate static var Log = Logger(String(describing: VerifyClient.self))
+    
+    fileprivate static var instance: VerifyClient?
+    
     static var PARAM_PIN = "pin"
+    
     static var sharedInstance : VerifyClient {
         get {
             if let instance = instance {
@@ -30,15 +33,21 @@ import UIKit
     }
     
     // nexmo sdk services
-    private let nexmoClient : NexmoClient
-    private let serviceExecutor : ServiceExecutor
-    private let verifyService : VerifyService
-    private let checkService : CheckService
-    private let controlService : ControlService
-    private let logoutService : LogoutService
-    private let searchService : SearchService
+    fileprivate let nexmoClient: NexmoClient
     
-    private var currentVerifyTask : VerifyTask?
+    fileprivate let serviceExecutor: ServiceExecutor
+    
+    fileprivate let verifyService: VerifyService
+    
+    fileprivate let checkService: CheckService
+    
+    fileprivate let controlService: ControlService
+    
+    fileprivate let logoutService: LogoutService
+    
+    fileprivate let searchService: SearchService
+    
+    fileprivate var currentVerifyTask: VerifyTask?
 
     init(nexmoClient: NexmoClient, serviceExecutor: ServiceExecutor, verifyService: VerifyService, checkService: CheckService, controlService: ControlService, logoutService: LogoutService, searchService: SearchService) {
             self.nexmoClient = nexmoClient
@@ -78,22 +87,23 @@ import UIKit
         
         - parameter onError: callback triggered when some error has occurred, e.g. wrong pin entered
     */
-    @objc(getVerifiedUserWithCountryCode:phoneNumber:verifyInProgressBlock:userVerifiedBlock:errorBlock:)
-    public static func getVerifiedUser(countryCode countryCode: String?, phoneNumber: String,
-                                        onVerifyInProgress: () -> (),
-                                        onUserVerified: () -> (),
-                                        onError: (error: VerifyError) -> ()) {
+    public static func getVerifiedUser(countryCode: String?,
+                                     phoneNumber: String,
+                                     onVerifyInProgress: @escaping () -> (),
+                                     onUserVerified: @escaping () -> (),
+                                     onError: @escaping (_ error: VerifyError) -> ()) {
         sharedInstance.getVerifiedUser(countryCode: countryCode, phoneNumber: phoneNumber, onVerifyInProgress: onVerifyInProgress, onUserVerified: onUserVerified, onError: onError)
     }
     
-    func getVerifiedUser(countryCode countryCode: String?, phoneNumber: String,
-                                        onVerifyInProgress: () -> (),
-                                        onUserVerified: () -> (),
-                                        onError: (error: VerifyError) -> ()) {
+    func getVerifiedUser(countryCode: String?,
+                         phoneNumber: String,
+                         onVerifyInProgress: @escaping () -> (),
+                         onUserVerified: @escaping () -> (),
+                         onError: @escaping (_ error: VerifyError) -> ()) {
         
-        if (self.currentVerifyTask?.userStatus == UserStatus.USER_PENDING) {
+        if (self.currentVerifyTask?.userStatus == .pending) {
             VerifyClient.Log.info("Verification attempted but one is already in progress.")
-            onError(error: VerifyError.VERIFICATION_ALREADY_STARTED)
+            onError(VerifyError.verification_already_started)
             return
         }
         
@@ -105,42 +115,42 @@ import UIKit
         self.verifyService.start(request: self.currentVerifyTask!.createVerifyRequest()) { response, error in
             if let error = error {
                 if (error.code == 1000) {
-                    onError(error: .NETWORK_ERROR)
+                    onError(.network_error)
                 } else {
-                onError(error: .INTERNAL_ERROR)
+                onError(.internal_error)
                 }
                 return
             }
             
             if let response = response {
-                if let responseCode =  ResponseCode.Code(rawValue: response.resultCode) where
-                        (responseCode == .RESULT_CODE_OK ||
-                        responseCode == .VERIFICATION_RESTARTED ||
-                        responseCode == .VERIFICATION_EXPIRED_RESTARTED) {
+                if let responseCode =  ResponseCode.Code(rawValue: response.resultCode) ,
+                        (responseCode == .result_code_ok ||
+                        responseCode == .verification_restarted ||
+                        responseCode == .verification_expired_restarted) {
                     
-                    verifyTask.setUserState(response.userStatus!)
+                    verifyTask.setUserState(response.userStatus)
                     
-                    switch (response.userStatus!) {
-                        case UserStatus.USER_PENDING:
+                    switch (response.userStatus) {
+                        case .pending:
                             verifyTask.onVerifyInProgress()
                         
-                        case UserStatus.USER_VERIFIED:
+                        case .verified:
                             verifyTask.onUserVerified()
                         
-                        case UserStatus.USER_EXPIRED:
-                            verifyTask.onError(error: .USER_EXPIRED)
+                        case .expired:
+                            verifyTask.onError(.user_expired)
                         
-                        case UserStatus.USER_BLACKLISTED:
-                            verifyTask.onError(error: .USER_BLACKLISTED)
+                        case .blacklisted:
+                            verifyTask.onError(.user_blacklisted)
                         
                         default:
-                            verifyTask.onError(error: .INTERNAL_ERROR)
+                            verifyTask.onError(.internal_error)
                     }
                 } else if let responseCode = ResponseCode.Code(rawValue: response.resultCode),
                           let error = ResponseCode.responseCodeToVerifyError[responseCode] {
-                    verifyTask.onError(error: error)
+                    verifyTask.onError(error)
                 } else {
-                    verifyTask.onError(error: .INTERNAL_ERROR)
+                    verifyTask.onError(.internal_error)
                 }
             }
         }
@@ -155,38 +165,37 @@ import UIKit
         
         - parameter pinCode: a string containing the pin code to check.
     */
-    @objc(checkPinCode:)
-    public static func checkPinCode(pinCode: String) {
+    public static func checkPinCode(_ pinCode: String) {
         sharedInstance.checkPinCode(pinCode)
     }
     
-    func checkPinCode(pinCode: String) {
+    func checkPinCode(_ pinCode: String) {
         VerifyClient.Log.info("checkPinCode called")
-        if let verifyTask = currentVerifyTask where verifyTask.userStatus == UserStatus.USER_PENDING || verifyTask.standalone {
+        if let verifyTask = currentVerifyTask , verifyTask.userStatus == .pending || verifyTask.standalone {
             checkService.start(request: CheckRequest(verifyTask: verifyTask, pinCode: pinCode)) { response, error in
                 if let _ = error {
-                    verifyTask.onError(error: .INTERNAL_ERROR)
+                    verifyTask.onError(.internal_error)
                     return
                 }
                 
                 if let response = response,
                         let responseCode = ResponseCode.Code(rawValue: response.resultCode) {
                     switch (responseCode) {
-                        case .RESULT_CODE_OK:
-                            if (response.userStatus! == UserStatus.USER_VERIFIED) {
-                                self.currentVerifyTask?.setUserState(UserStatus.USER_VERIFIED)
+                        case .result_code_ok:
+                            if (response.userStatus == .verified) {
+                                self.currentVerifyTask?.setUserState(.verified)
                                 self.currentVerifyTask?.onUserVerified()
                             }
                         
                         default:
                             if let error = ResponseCode.responseCodeToVerifyError[responseCode] {
-                                verifyTask.onError(error: error)
+                                verifyTask.onError(error)
                             } else {
-                                verifyTask.onError(error: .INTERNAL_ERROR)
+                                verifyTask.onError(.internal_error)
                             }
                     }
                 } else {
-                    verifyTask.onError(error: .INTERNAL_ERROR)
+                    verifyTask.onError(.internal_error)
                 }
             }
         } else {
@@ -211,12 +220,11 @@ import UIKit
         
         - parameter onError: Callback which is executed when an error occurs
     */
-    @objc(checkPinCode:WithCountryCode:WithNumber:verifyInProgressBlock:errorBlock:)
-    public static func checkPinCode(pinCode: String, countryCode: String?, number: String, onUserVerified: () -> (), onError: (VerifyError) -> ()) {
+    open static func checkPinCode(_ pinCode: String, countryCode: String?, number: String, onUserVerified: @escaping () -> (), onError: @escaping (VerifyError) -> ()) {
         sharedInstance.checkPinCode(pinCode, countryCode: countryCode, number: number, onUserVerified: onUserVerified, onError: onError)
     }
     
-    func checkPinCode(pinCode: String, countryCode: String?, number: String, onUserVerified: () -> (), onError: (VerifyError) -> ()) {
+    func checkPinCode(_ pinCode: String, countryCode: String?, number: String, onUserVerified: @escaping () -> (), onError: @escaping (VerifyError) -> ()) {
         VerifyClient.Log.info("checkPinCode called")
         let verifyTask = VerifyTask(countryCode: countryCode,
                                     phoneNumber: number,
@@ -228,28 +236,28 @@ import UIKit
         self.currentVerifyTask = verifyTask
         checkService.start(request: CheckRequest(verifyTask: verifyTask, pinCode: pinCode)) { response, error in
             if let _ = error {
-                verifyTask.onError(error: .INTERNAL_ERROR)
+                verifyTask.onError(.internal_error)
                 return
             }
             
             if let response = response,
                     let responseCode = ResponseCode.Code(rawValue: response.resultCode) {
                 switch (responseCode) {
-                    case .RESULT_CODE_OK:
-                        if (response.userStatus! == UserStatus.USER_VERIFIED) {
-                            self.currentVerifyTask?.setUserState(UserStatus.USER_VERIFIED)
+                    case .result_code_ok:
+                        if (response.userStatus == .verified) {
+                            self.currentVerifyTask?.setUserState(.verified)
                             self.currentVerifyTask?.onUserVerified()
                         }
                     
                     default:
                         if let error = ResponseCode.responseCodeToVerifyError[responseCode] {
-                            verifyTask.onError(error: error)
+                            verifyTask.onError(error)
                         } else {
-                            verifyTask.onError(error: .INTERNAL_ERROR)
+                            verifyTask.onError(.internal_error)
                         }
                 }
             } else {
-                verifyTask.onError(error: .INTERNAL_ERROR)
+                verifyTask.onError(.internal_error)
             }
         }
     }
@@ -259,23 +267,22 @@ import UIKit
         
         - parameter completionBlock: A callback which is invoked when the cancel request completes or fails (with an NSError)
     */
-    @objc(cancelVerificationWithBlock:)
-    public static func cancelVerification(completionBlock: (error: NSError?) -> ()) {
+    open static func cancelVerification(_ completionBlock: @escaping (_ error: NSError?) -> ()) {
         sharedInstance.cancelVerification(completionBlock)
     }
     
-    func cancelVerification(completionBlock: (error: NSError?) -> ()) {
+    func cancelVerification(_ completionBlock: @escaping (_ error: NSError?) -> ()) {
         if let currentVerifyTask = currentVerifyTask {
-            controlService.start(request: ControlRequest(.Cancel, verifyTask: currentVerifyTask)) { response, error in
+            controlService.start(ControlRequest(.Cancel, verifyTask: currentVerifyTask)) { response, error in
                 if let error = error {
-                    completionBlock(error: error)
+                    completionBlock(error)
                 } else {
                     self.currentVerifyTask = nil
-                    completionBlock(error: nil)
+                    completionBlock(nil)
                 }
             }
         } else {
-            completionBlock(error: NSError(domain: "VerifyClient", code: 1, userInfo: [NSLocalizedDescriptionKey : "No verification attempt in progress"]))
+            completionBlock(NSError(domain: "VerifyClient", code: 1, userInfo: [NSLocalizedDescriptionKey : "No verification attempt in progress"]))
         }
     }
     
@@ -289,22 +296,21 @@ import UIKit
         - parameter completionBlock: A callback which is invoked when the 'next event'
                 request completes or fails (with an NSError)
     */
-    @objc(triggerNextEventWithBlock:)
-    public static func triggerNextEvent(completionBlock: (error: NSError?) -> ()) {
+    open static func triggerNextEvent(_ completionBlock: @escaping (_ error: NSError?) -> ()) {
         sharedInstance.triggerNextEvent(completionBlock)
     }
     
-    func triggerNextEvent(completionBlock: (error: NSError?) -> ()) {
+    func triggerNextEvent(_ completionBlock: @escaping (_ error: NSError?) -> ()) {
         if let currentVerifyTask = currentVerifyTask {
-            controlService.start(request: ControlRequest(.NextEvent, verifyTask: currentVerifyTask)) { response, error in
+            controlService.start(ControlRequest(.NextEvent, verifyTask: currentVerifyTask)) { response, error in
                 if let error = error {
-                    completionBlock(error: error)
+                    completionBlock(error)
                 } else {
-                    completionBlock(error: nil)
+                    completionBlock(nil)
                 }
             }
         } else {
-            completionBlock(error: NSError(domain: "VerifyClient", code: 1, userInfo: [NSLocalizedDescriptionKey : "No verification attempt in progress"]))
+            completionBlock(NSError(domain: "VerifyClient", code: 1, userInfo: [NSLocalizedDescriptionKey : "No verification attempt in progress"]))
         }
     }
     
@@ -317,19 +323,18 @@ import UIKit
         - parameter completionBlock: A callback which is invoked when the logout
                 request completes of fails (with an NSError)
     */
-    @objc(logoutUserWithCountryCode:WithNumber:WithBlock:)
-    public static func logoutUser(countryCode countryCode: String?, number: String, completionBlock: (error: NSError?) -> ()) {
+    open static func logoutUser(countryCode: String?, number: String, completionBlock: @escaping (_ error: NSError?) -> ()) {
         sharedInstance.logoutUser(countryCode: countryCode, number: number, completionBlock: completionBlock)
     }
     
-    func logoutUser(countryCode countryCode: String?, number: String, completionBlock: (error: NSError?) -> ()) {
+    func logoutUser(countryCode: String?, number: String, completionBlock: @escaping (_ error: NSError?) -> ()) {
 
         let logoutRequest = LogoutRequest(number: number, countryCode: countryCode)
         self.logoutService.start(request: logoutRequest) { response, error in
             if let error = error {
-                completionBlock(error: error)
+                completionBlock(error)
             } else {
-                completionBlock(error: nil)
+                completionBlock(nil)
             }
         }
     }
@@ -375,18 +380,17 @@ import UIKit
         - parameter completionBlock: A callback which is invoked when the logout request
                 completes or fails (with an NSError)
     */
-    @objc(getUserStatusWithCountryCode:WithNumber:WithBlock:)
-    public static func getUserStatus(countryCode countryCode: String?, number: String, completionBlock: (status: String?, error: NSError?) -> ()) {
+    open static func getUserStatus(countryCode: String?, number: String, completionBlock: @escaping (_ status: UserStatus, _ error: NSError?) -> ()) {
         VerifyClient.sharedInstance.getUserStatus(countryCode: countryCode, number: number, completionBlock: completionBlock)
     }
     
-    func getUserStatus(countryCode countryCode: String?, number: String, completionBlock: (status: String?, error: NSError?) -> ()) {
+    func getUserStatus(countryCode: String?, number: String, completionBlock: @escaping (_ status: UserStatus, _ error: NSError?) -> ()) {
         let searchRequest = SearchRequest(number: number, countryCode: countryCode)
         self.searchService.start(request: searchRequest) { response, error in
             if let error = error {
-                completionBlock(status: nil, error: error)
+                completionBlock(.unknown, error)
             } else {
-                completionBlock(status: response!.userStatus, error: nil)
+                completionBlock(response!.userStatus, nil)
             }
         }
         return
@@ -401,80 +405,84 @@ import UIKit
         - parameter performSilentCheck: if true, Nexmo Verify SDK will complete the verification request
                 automatically, which verifies the user.
     */
-    @objc(handleNotificationWithUserInfo:performSilentCheck:)
-    public static func handleNotification(userInfo: [NSObject : AnyObject], performSilentCheck: Bool) -> Bool {
+    open static func handleNotification(_ userInfo: [AnyHashable: Any], performSilentCheck: Bool) -> Bool {
         return VerifyClient.sharedInstance.handleNotification(userInfo, performSilentCheck: performSilentCheck)
     }
     
-    func handleNotification(userInfo: [NSObject : AnyObject], performSilentCheck: Bool) -> Bool {
+    func handleNotification(_ userInfo: [AnyHashable: Any], performSilentCheck: Bool) -> Bool {
         if let pin = userInfo[VerifyClient.PARAM_PIN] as? String {
             if (performSilentCheck) {
                 checkPinCode(pin)
             } else {
-                let controller = UIAlertController(title: "Verify Pin", message: "Your verification pin is \(pin)", preferredStyle: .Alert)
-                let okAction = UIAlertAction(title: "Okay", style: .Default, handler: nil)
+                let controller = UIAlertController(title: "Verify Pin", message: "Your verification pin is \(pin)", preferredStyle: .alert)
+                let okAction = UIAlertAction(title: "Okay", style: .default, handler: nil)
                 controller.addAction(okAction)
-                UIApplication.sharedApplication().keyWindow?.rootViewController?.presentViewController(controller, animated: true, completion: nil)
+                UIApplication.shared.keyWindow?.rootViewController?.present(controller, animated: true, completion: nil)
             }
             return true
         }
         return false
     }
     
-    @objc(verifyStandaloneWithCountryCode:phoneNumber:verifyInProgressBlock:userVerifiedBlock:errorBlock:)
-    public static func verifyStandalone(countryCode countryCode: String?, phoneNumber: String,
-                                        onVerifyInProgress: () -> (),
-                                        onUserVerified: () -> (),
-                                        onError: (error: VerifyError) -> ()) {
+    open static func verifyStandalone(countryCode: String?, phoneNumber: String,
+                                        onVerifyInProgress: @escaping () -> (),
+                                        onUserVerified: @escaping () -> (),
+                                        onError: @escaping (_ error: VerifyError) -> ()) {
         sharedInstance.verifyStandalone(countryCode: countryCode, phoneNumber: phoneNumber, onVerifyInProgress: onVerifyInProgress, onUserVerified: onUserVerified, onError: onError)
     }
     
-    func verifyStandalone(countryCode countryCode: String?, phoneNumber: String,
-                                        onVerifyInProgress: () -> (),
-                                        onUserVerified: () -> (),
-                                        onError: (error: VerifyError) -> ()) {
+    func verifyStandalone(countryCode: String?, phoneNumber: String,
+                                        onVerifyInProgress: @escaping () -> (),
+                                        onUserVerified: @escaping () -> (),
+                                        onError: @escaping (_ error: VerifyError) -> ()) {
         
-        if (self.currentVerifyTask?.userStatus == UserStatus.USER_PENDING) {
+        if (self.currentVerifyTask?.userStatus == .pending) {
             VerifyClient.Log.info("Verification attempted but one is already in progress.")
-            onError(error: VerifyError.VERIFICATION_ALREADY_STARTED)
+            onError(VerifyError.verification_already_started)
             return
         }
         
         // acquire new token for this verification attempt
-        let verifyTask = VerifyTask(countryCode: countryCode, phoneNumber: phoneNumber, standalone: true, gcmToken: self.nexmoClient.gcmToken, onVerifyInProgress: onVerifyInProgress, onUserVerified: onUserVerified, onError: onError)
+        let verifyTask = VerifyTask(countryCode: countryCode,
+                                    phoneNumber: phoneNumber,
+                                    standalone: true,
+                                    gcmToken: self.nexmoClient.gcmToken,
+                                    onVerifyInProgress: onVerifyInProgress,
+                                    onUserVerified: onUserVerified,
+                                    onError: onError)
         self.currentVerifyTask = verifyTask
         
         // begin verification process
         self.verifyService.start(request: self.currentVerifyTask!.createVerifyRequest()) { response, error in
             if let _ = error {
-                onError(error: .INTERNAL_ERROR)
+                onError(.internal_error)
                 return
             }
             
             if let response = response {
-                if let responseCode =  ResponseCode.Code(rawValue: response.resultCode) where
-                        (responseCode == .RESULT_CODE_OK ||
-                        responseCode == .VERIFICATION_RESTARTED ||
-                        responseCode == .VERIFICATION_EXPIRED_RESTARTED) {
+                if let responseCode =  ResponseCode.Code(rawValue: response.resultCode) ,
+                        (responseCode == .result_code_ok ||
+                        responseCode == .verification_restarted ||
+                        responseCode == .verification_expired_restarted) {
                             
-                    switch (response.userStatus!) {
-                        case UserStatus.USER_VERIFIED:
+                    switch (response.userStatus) {
+                        case .verified:
                             verifyTask.onVerifyInProgress()
                         
-                        case UserStatus.USER_EXPIRED:
-                            verifyTask.onError(error: .USER_EXPIRED)
+                        case .expired:
+                            verifyTask.onError(.user_expired)
                         
-                        case UserStatus.USER_BLACKLISTED:
-                            verifyTask.onError(error: .USER_BLACKLISTED)
+                        case .blacklisted:
+                            verifyTask.onError(.user_blacklisted)
                         
                         default:
-                            verifyTask.onError(error: .INTERNAL_ERROR)
+                            verifyTask.onError(.internal_error)
                     }
                 } else if let responseCode = ResponseCode.Code(rawValue: response.resultCode),
                           let error = ResponseCode.responseCodeToVerifyError[responseCode] {
-                    verifyTask.onError(error: error)
+                    verifyTask.onError(error)
                 } else {
-                    verifyTask.onError(error: .INTERNAL_ERROR)
+                    verifyTask.onError(.internal_error)
                 }
             }
         }

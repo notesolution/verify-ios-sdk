@@ -8,9 +8,9 @@
 
 import Foundation
 
-class ControlResponse : BaseResponse {
+class ControlResponse: BaseResponse {
 
-    private(set) var errorText : String?
+    fileprivate(set) var errorText : String?
     
     required init?(_ httpResponse: HttpResponse) {
         super.init(httpResponse)

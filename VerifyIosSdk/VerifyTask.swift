@@ -14,19 +14,27 @@ import Foundation
 */
 class VerifyTask {
 
-    private static let Log = Logger(String(VerifyTask))
+    fileprivate static let Log = Logger(String(describing: VerifyTask.self))
 
-    let countryCode : String?
-    let phoneNumber : String
-    let gcmToken : String?
-    var userStatus = UserStatus.USER_NEW
-    var pinCode : String?
-    let standalone : Bool
+    let countryCode: String?
+    
+    let phoneNumber: String
+    
+    let gcmToken: String?
+    
+    var userStatus = UserStatus.new
+    
+    var pinCode: String?
+    
+    let standalone: Bool
+    
     let onVerifyInProgress : () -> ()
+    
     let onUserVerified : () -> ()
-    let onError : (error: VerifyError) -> ()
+    
+    let onError: (_ error: VerifyError) -> ()
 
-    init(countryCode: String?, phoneNumber: String, standalone: Bool, gcmToken: String?, onVerifyInProgress: () -> (), onUserVerified: () -> (), onError: (error: VerifyError) -> ()) {
+    init(countryCode: String?, phoneNumber: String, standalone: Bool, gcmToken: String?, onVerifyInProgress: @escaping () -> (), onUserVerified: @escaping () -> (), onError: @escaping (_ error: VerifyError) -> ()) {
         self.countryCode = countryCode
         self.phoneNumber = phoneNumber
         self.standalone = standalone
@@ -46,21 +54,21 @@ class VerifyTask {
     /**
         Change user state according to the appropriate state machine
     */
-    func setUserState(userStatus: String) {
+    func setUserState(_ userStatus: UserStatus) {
         switch (userStatus) {
-            case UserStatus.USER_PENDING:
-                if (self.userStatus == UserStatus.USER_NEW) {
-                    self.userStatus = UserStatus.USER_PENDING
+            case .pending:
+                if (self.userStatus == .new) {
+                    self.userStatus = .pending
                 } else {
                     VerifyTask.Log.error("Attempted to set verify task to \(userStatus) but not in valid state (actually in state \(self.userStatus).")
                 }
             
-            case UserStatus.USER_BLACKLISTED,
-                 UserStatus.USER_EXPIRED,
-                 UserStatus.USER_FAILED,
-                 UserStatus.USER_VERIFIED:
-                if (self.userStatus == UserStatus.USER_PENDING ||
-                    self.userStatus == UserStatus.USER_NEW) {
+            case .blacklisted,
+                 .expired,
+                 .failed,
+                 .verified:
+                if (self.userStatus == .pending ||
+                    self.userStatus == .new) {
                     self.userStatus = userStatus
                 } else {
                     VerifyTask.Log.error("Attempted to set verify task to \(userStatus) but not in valid state (actually in state \(self.userStatus).")

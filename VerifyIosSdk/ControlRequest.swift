@@ -8,11 +8,13 @@
 
 import Foundation
 
-class ControlRequest : Equatable {
+class ControlRequest: Equatable {
 
-    let command : String
-    let phoneNumber : String
-    let countryCode : String?
+    let command: String
+    
+    let phoneNumber: String
+    
+    let countryCode: String?
     
     init(_ command: ControlCommand, verifyTask: VerifyTask) {
         self.command = command.rawValue
@@ -24,10 +26,12 @@ class ControlRequest : Equatable {
         case Cancel = "cancel"
         case NextEvent = "trigger_next_event"
     }
-}
-
-func ==(lhs: ControlRequest, rhs: ControlRequest) -> Bool {
-    return (lhs.command == rhs.command &&
+    
+    static func ==(lhs: ControlRequest, rhs: ControlRequest) -> Bool {
+        return (lhs.command == rhs.command &&
             lhs.phoneNumber == rhs.phoneNumber &&
             lhs.countryCode == rhs.countryCode)
+    }
+    
 }
+

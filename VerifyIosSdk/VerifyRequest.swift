@@ -11,12 +11,15 @@ import Foundation
 /**
     Contains information required by the verify service to begin a request, such as a mobile number
 */
-public class VerifyRequest {
+class VerifyRequest: Equatable {
 
-    let countryCode : String?
-    let phoneNumber : String
-    let standalone : Bool
-    let gcmToken : String?
+    let countryCode: String?
+    
+    let phoneNumber: String
+    
+    let standalone: Bool
+    
+    let gcmToken: String?
     
     init(countryCode: String?, phoneNumber: String, standalone: Bool, gcmToken: String?) {
         self.countryCode = countryCode
@@ -28,10 +31,10 @@ public class VerifyRequest {
     convenience init(countryCode: String?, phoneNumber: String, standalone: Bool) {
         self.init(countryCode: countryCode, phoneNumber: phoneNumber, standalone: standalone, gcmToken: nil)
     }
-}
-
-public func ==(lhs: VerifyRequest, rhs: VerifyRequest) -> Bool {
-    return (lhs.countryCode == rhs.countryCode &&
+    
+    static func ==(lhs: VerifyRequest, rhs: VerifyRequest) -> Bool {
+        return (lhs.countryCode == rhs.countryCode &&
             lhs.phoneNumber == rhs.phoneNumber &&
             lhs.gcmToken == rhs.gcmToken)
+    }
 }

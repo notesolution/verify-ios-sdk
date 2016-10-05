@@ -8,8 +8,9 @@
 
 import Foundation
 
-class SearchResponseFactory : ResponseFactory {
-    func createResponse(httpResponse: HttpResponse) -> BaseResponse? {
+class SearchResponseFactory: ResponseFactory {
+    
+    func createResponse(_ httpResponse: HttpResponse) -> BaseResponse? {
         return SearchResponse(httpResponse)
     }
 }

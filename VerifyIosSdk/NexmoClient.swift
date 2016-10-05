@@ -11,16 +11,19 @@ import Foundation
 /**
     Contains core information relevant to all Nexmo services
 */
-@objc public class NexmoClient : NSObject {
+public class NexmoClient {
 
-    private static var instance : NexmoClient?
+    private static var instance: NexmoClient?
     
-    let applicationId : String
-    let sharedSecretKey : String
-    var sdkToken : String!
-    var gcmToken : String?
+    let applicationId: String
     
-    static var sharedInstance : NexmoClient {
+    let sharedSecretKey: String
+    
+    var sdkToken: String!
+    
+    var gcmToken: String?
+    
+    static var sharedInstance: NexmoClient {
         get {
             if let instance = instance {
                 return instance
@@ -35,7 +38,6 @@ import Foundation
         self.applicationId = applicationId
         self.sharedSecretKey = sharedSecretKey
         self.gcmToken = gcmToken
-        super.init()
     }
     
     convenience init(applicationId: String, sharedSecretKey: String) {
@@ -49,8 +51,7 @@ import Foundation
 
         - parameter sharedSecretKey: your shared secret key
     */
-    @objc(startWithApplicationId:sharedSecretKey:)
-    public static func start(applicationId applicationId: String, sharedSecretKey: String) {
+    public static func start(applicationId: String, sharedSecretKey: String) {
         NexmoClient.instance = NexmoClient(applicationId: applicationId, sharedSecretKey: sharedSecretKey)
     }
     
@@ -63,8 +64,7 @@ import Foundation
         
         - parameter gcmToken: Google Cloud Messaging registration token of the device. Used for Verification via push notification.
     */
-    @objc(startWithApplicationId:sharedSecretKey:gcmToken:)
-    public static func start(applicationId applicationId: String, sharedSecretKey: String, gcmToken: String) {
+    public static func start(applicationId: String, sharedSecretKey: String, gcmToken: String) {
         NexmoClient.instance = NexmoClient(applicationId: applicationId, sharedSecretKey: sharedSecretKey, gcmToken: gcmToken)
     }
     
@@ -73,8 +73,7 @@ import Foundation
         
         - parameter gcmToken: The Google Cloud Messaging registration token
     */
-    @objc(setGcmToken:)
-    public static func setGcmToken(gcmToken: String) {
+    public static func setGcmToken(_ gcmToken: String) {
         NexmoClient.sharedInstance.gcmToken = gcmToken
     }
 }
